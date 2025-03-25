@@ -101,7 +101,8 @@ public:
 class ThunderLoomMtl : public Mtl, public VR::VRenderMtl {
 	VR::BRDFPool<MyBlinnBSDF> bsdfPool;
 	VR::LayeredBSDFRenderChannels renderChannels;
-	VR::Color getBlend(ShadeContext &sc, int i);
+	//VR::Color getBlend(ShadeContext &sc, int i);
+	//VR::Color Blend(ShadeContext &sc, int i);
 public:
 	// various variables
 	HWND m_hwMtlEdit;
@@ -122,7 +123,11 @@ public:
 	ThunderLoomMtl(BOOL loading);
 	Class_ID ClassID() { return MTL_CLASSID; }
 	SClass_ID SuperClassID() { return MATERIAL_CLASS_ID; }
+#if MAX_VERSION_MAJOR < 24
 	void GetClassName(TSTR& s) { s=STR_CLASSNAME; }
+#else
+	void GetClassName(TSTR& s, bool localized ) { s=STR_CLASSNAME; }
+#endif
 	void DeleteThis() { delete this; }
 	
 	void NotifyChanged();
@@ -155,14 +160,23 @@ public:
 	int NumSubMtls() { return 0; }
 	Mtl* GetSubMtl(int i) { return NULL; }
 	void SetSubMtl(int i, Mtl *m) {}
+#if MAX_VERSION_MAJOR < 24
 	TSTR GetSubMtlSlotName(int i) { return _T(""); }
+#else
+	TSTR GetSubMtlSlotName(int i, bool localized) { return _T(""); }
+#endif
 	TSTR GetSubMtlTVName(int i) { return _T(""); }
 
 	// SubTexmap access methods
 	int NumSubTexmaps();
 	Texmap* GetSubTexmap(int i);
 	void SetSubTexmap(int i, Texmap *m);
+#if MAX_VERSION_MAJOR < 24
 	TSTR GetSubTexmapSlotName(int i);
+#else
+	TSTR GetSubTexmapSlotName(int i, bool localized);
+#endif
+
 	TSTR GetSubTexmapTVName(int i);
 
 	//SubAnims
@@ -171,7 +185,11 @@ public:
 	// Such as submtls or SubTexmapsmaterials or texmaps
 	int NumSubs() { return 1; } 
 	Animatable* SubAnim(int i);
+#if MAX_VERSION_MAJOR < 24
 	TSTR SubAnimName(int i);
+#else
+	TSTR SubAnimName(int i, bool localized);
+#endif
 	int SubNumToRefNum(int subNum) { return subNum; }
 
 	// Number of references
@@ -200,6 +218,10 @@ public:
 	void deleteBSDF(const VR::VRayContext &rc, VR::BSDFSampler *bsdf);
 	void addRenderChannel(int index);
 	VR::VRayVolume* getVolume(const VR::VRayContext &rc);
+	ULONG getRequirements(int subMtl);
+#if VRAY_DLL_VERSION_MAJOR > 6
+	void initMaterialName(void) {};
+#endif
 
 	// Shade and displacement calculation
 	virtual void Shade(ShadeContext& sc);

@@ -79,6 +79,9 @@ public:
 	virtual int IsPublic() 							{ return IS_PUBLIC; }
 	virtual void* Create(BOOL loading = FALSE)		{ return new ThunderLoomMtl(loading); }
 	virtual const TCHAR *	ClassName() 			{ return STR_CLASSNAME; }
+#if MAX_VERSION_MAJOR > 23
+	virtual const TCHAR *	NonLocalizedClassName() { return ClassName(); }
+#endif
 	virtual SClass_ID SuperClassID() 				{ return MATERIAL_CLASS_ID; }
 	virtual Class_ID ClassID() 						{ return MTL_CLASSID; }
 	virtual const TCHAR* Category() 				{ return NULL; }
@@ -729,7 +732,12 @@ void ThunderLoomMtl::SetReference(int i, RefTargetHandle rtarg) {
 	if (i==0) pblock=(IParamBlock2*) rtarg;
 }
 
-TSTR ThunderLoomMtl::SubAnimName(int i) {
+#if MAX_VERSION_MAJOR < 24
+TSTR ThunderLoomMtl::SubAnimName(int i) 
+#else
+TSTR ThunderLoomMtl::SubAnimName(int i, bool localized) 
+#endif
+{
 	if (i==0) return _T("Parameters");
 	return _T("");
 }
@@ -802,8 +810,12 @@ void ThunderLoomMtl::SetSubTexmap(int i, Texmap* m) {
         pblock->SetValue(texmaps, 0, m, i);
     }
 }
-
-TSTR ThunderLoomMtl::GetSubTexmapSlotName(int i) {
+#if MAX_VERSION_MAJOR < 24
+TSTR ThunderLoomMtl::GetSubTexmapSlotName(int i)
+#else
+TSTR ThunderLoomMtl::GetSubTexmapSlotName(int i, bool localized) 
+#endif
+{
 
 	int yrntexmap_id = i;
 	switch(yrntexmap_id % NUMBER_OF_YRN_TEXMAPS) {
@@ -817,7 +829,11 @@ TSTR ThunderLoomMtl::GetSubTexmapSlotName(int i) {
 }
 
 TSTR ThunderLoomMtl::GetSubTexmapTVName(int i) {
+#if MAX_VERSION_MAJOR < 24
 	return GetSubTexmapSlotName(i);
+#else
+	return GetSubTexmapSlotName(i, false);
+#endif
 }
 /*===========================================================================*\
  |	Standard IO
@@ -1063,6 +1079,10 @@ void ThunderLoomMtl::addRenderChannel(int index) {
 
 VR::VRayVolume* ThunderLoomMtl::getVolume(const VR::VRayContext &rc) {
 	return NULL;
+}
+
+ULONG ThunderLoomMtl::getRequirements(int subMtl) {
+	return 0;
 }
 
 /*===========================================================================*\

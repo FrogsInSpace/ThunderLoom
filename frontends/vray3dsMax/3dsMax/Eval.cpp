@@ -234,7 +234,14 @@ class SCTexture: public ShadeContext {
 		Point3 DUVW(int chan) { return Point3(duv.x, duv.y, 0.0f);  }
 		void DPdUVW(Point3 dP[3], int chan) {}  // dont need bump vectors
 		void GetBGColor(Color &bgcol, Color& transp, BOOL fogBG=TRUE) {}   // returns Background color, bg transparency
-		
+
+#if MAX_VERSION_MAJOR >= 26 
+		Matrix3 MatrixTo(RefFrame ito) { return origsc->MatrixTo(ito); }
+		Matrix3 MatrixFrom(RefFrame ifrom) { return origsc->MatrixFrom(ifrom); }
+
+#endif
+
+
 		float Curve() { return curve; }
 
 		// Transform to and from internal space

@@ -22,7 +22,7 @@ void MyBaseBSDF::init(const VRayContext &rc, tlWeaveParameters *weave_parameters
 		CALL_DYNAMIC_FUNC_VOID(EvalDiffuseFunc)
 #undef DYNAMIC_FUNC_ARG_TYPES
 #undef DYNAMIC_FUNC_ARG_NAMES
-    orig_backside = rc.rayresult.realBack;
+    orig_backside = rc.rayresult.getRealBack();
 
     const VR::VRayInterface &vri_const=static_cast<const VR::VRayInterface&>(rc);
 	VR::VRayInterface &vri=const_cast<VR::VRayInterface&>(vri_const);
@@ -31,7 +31,7 @@ void MyBaseBSDF::init(const VRayContext &rc, tlWeaveParameters *weave_parameters
 	// Set the normals to use for lighting
 	normal=rc.rayresult.normal;
 	gnormal=rc.rayresult.gnormal;
-	if (rc.rayresult.realBack) {
+	if (rc.rayresult.getRealBack()) {
 		normal=-normal;
 		gnormal=-gnormal;
 	}
