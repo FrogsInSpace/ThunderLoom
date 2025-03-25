@@ -46,80 +46,86 @@ else()
 	list(APPEND SRC ${DYNAMIC_LOAD_SOURCES})
 endif()
 
+set(VRAY_SDK_ROOT "F:/_SDKs/3dsMax/ChaosGroup/")
+
 foreach(3DSMAX_VERSION ${3DSMAX_VERSIONS})
+	foreach(VRAY_VERSION ${VRAY_VERSIONS})
+		if( VRAY_VERSION GREATER 6 AND 3DSMAX_VERSION LESS 2020 )
+			# there is no Vray 7 below 3ds Max 2020
+			continue()
+		endif()
+		
+		if(3DSMAX_VERSION GREATER 2022)
+			set(CMAKE_CXX_STANDARD 17)         # Use C++17
+		endif()
+		
+		set(3DSMAXSDK${3DSMAX_VERSION}_ROOT $ENV{ADSK_3DSMAX_SDK_${3DSMAX_VERSION}} CACHE PATH "Path to 3dsMax root")
+		set(3DSMAXSDK${3DSMAX_VERSION}_INCLUDE "${3DSMAXSDK${3DSMAX_VERSION}_ROOT}/include/" CACHE PATH "Path to Max SDK include dir")
+		set(3DSMAXSDK${3DSMAX_VERSION}_LIB "${3DSMAXSDK${3DSMAX_VERSION}_ROOT}/lib/x64/Release/" CACHE PATH "Path to Max SDK lib dir")
 
-	set(3DSMAXSDK${3DSMAX_VERSION}_ROOT $ENV{ADSK_3DSMAX_SDK_${3DSMAX_VERSION}} CACHE PATH "Path to 3dsMax root")
-	set(3DSMAXSDK${3DSMAX_VERSION}_INCLUDE "${3DSMAXSDK${3DSMAX_VERSION}_ROOT}/include/" CACHE PATH "Path to Max SDK include dir")
-	set(3DSMAXSDK${3DSMAX_VERSION}_LIB "${3DSMAXSDK${3DSMAX_VERSION}_ROOT}/lib/x64/Release/" CACHE PATH "Path to Max SDK lib dir")
+		set(VRAY_FOR_3DSMAX${3DSMAX_VERSION}_ROOT "${VRAY_SDK_ROOT}Vray${VRAY_VERSION}/3dsMax${3DSMAX_VERSION}")
 
-	set(VRAY6_SDK_ROOT "F:/_SDKs/3dsMax/ChaosGroup/Vray6/3dsMax${3DSMAX_VERSION}")
-	set(VRAY7_SDK_ROOT "F:/_SDKs/3dsMax/ChaosGroup/Vray7/3dsMax${3DSMAX_VERSION}")
+		set(VRAY_3DSMAX${3DSMAX_VERSION}_INCLUDE "${VRAY_FOR_3DSMAX${3DSMAX_VERSION}_ROOT}/include/" CACHE PATH "Path to VRay Max SDK include dir")
+		set(VRAY_3DSMAX${3DSMAX_VERSION}_LIB "${VRAY_FOR_3DSMAX${3DSMAX_VERSION}_ROOT}/lib/" CACHE PATH "Path to VRay Max SDK lib dir")
 
-	# set(VRAY_3DSMAX${3DSMAX_VERSION}_ROOT $ENV{VRAY_MDL_PATH_3DSMAX${3DSMAX_VERSION}}/../ CACHE PATH "Path to VRay Max SDK dir")
-	if( 3DSMAX_VERSION LESS 2020 )
-		set(VRAY_FOR_3DSMAX${3DSMAX_VERSION}_ROOT ${VRAY6_SDK_ROOT} CACHE PATH "Path to VRay 6 Max SDK dir")
-    else()
-		set(VRAY_FOR_3DSMAX${3DSMAX_VERSION}_ROOT ${VRAY7_SDK_ROOT} CACHE PATH "Path to VRay 7 Max SDK dir")
-	endif()
-	set(VRAY_3DSMAX${3DSMAX_VERSION}_INCLUDE "${VRAY_FOR_3DSMAX${3DSMAX_VERSION}_ROOT}/include/" CACHE PATH "Path to VRay Max SDK include dir")
-	set(VRAY_3DSMAX${3DSMAX_VERSION}_LIB "${VRAY_FOR_3DSMAX${3DSMAX_VERSION}_ROOT}/lib/" CACHE PATH "Path to VRay Max SDK lib dir")
+		ADD_DEFINITIONS(-DUNICODE)
+		ADD_DEFINITIONS(-D_UNICODE)
+		ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS) # supress MSVC warn C4996
 
-	ADD_DEFINITIONS(-DUNICODE)
-	ADD_DEFINITIONS(-D_UNICODE)
-	ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS) # supress MSVC warn C4996
+		set(INCLUDES 
+			${TL_H_SOURCE_DIR}
+			${GL3W_INCLUDE}
+			${GLFW_INCLUDE}
+			${IMGUI_INCLUDE}
+			${3DSMAXSDK${3DSMAX_VERSION}_INCLUDE}
+			${VRAY_3DSMAX${3DSMAX_VERSION}_INCLUDE}
+			${VRAY_3DSMAX${3DSMAX_VERSION}_INCLUDE}/maxutils/
+		)
 
-	set(INCLUDES 
-		${TL_H_SOURCE_DIR}
-		${GL3W_INCLUDE}
-		${GLFW_INCLUDE}
-		${IMGUI_INCLUDE}
-		${3DSMAXSDK${3DSMAX_VERSION}_INCLUDE}
-		${VRAY_3DSMAX${3DSMAX_VERSION}_INCLUDE}
-	)
+		set(LIBS 
+			"${3DSMAXSDK${3DSMAX_VERSION}_LIB}/Paramblk2.lib"
+			"${3DSMAXSDK${3DSMAX_VERSION}_LIB}/core.lib"
+			"${3DSMAXSDK${3DSMAX_VERSION}_LIB}/geom.lib"
+			"${3DSMAXSDK${3DSMAX_VERSION}_LIB}/maxutil.lib"
+			"${3DSMAXSDK${3DSMAX_VERSION}_LIB}/bmm.lib"
+			"comctl32"
+			"odbc32"
+			"odbccp32"
+			"${VRAY_3DSMAX${3DSMAX_VERSION}_LIB}/vray.lib"
+			"${VRAY_3DSMAX${3DSMAX_VERSION}_LIB}/vrender${3DSMAX_VERSION}.lib"
 
-	set(LIBS 
-		"${3DSMAXSDK${3DSMAX_VERSION}_LIB}/Paramblk2.lib"
-		"${3DSMAXSDK${3DSMAX_VERSION}_LIB}/core.lib"
-		"${3DSMAXSDK${3DSMAX_VERSION}_LIB}/geom.lib"
-		"${3DSMAXSDK${3DSMAX_VERSION}_LIB}/maxutil.lib"
-		"${3DSMAXSDK${3DSMAX_VERSION}_LIB}/bmm.lib"
-		"comctl32"
-		"odbc32"
-		"odbccp32"
-		"${VRAY_3DSMAX${3DSMAX_VERSION}_LIB}/vray${3DSMAX_VERSION}.lib"
-		"${VRAY_3DSMAX${3DSMAX_VERSION}_LIB}/vrender${3DSMAX_VERSION}.lib"
+			"${VRAY_3DSMAX${3DSMAX_VERSION}_LIB}/vutils_s.lib"
+			"${VRAY_3DSMAX${3DSMAX_VERSION}_LIB}/putils_s.lib"
+			"${VRAY_3DSMAX${3DSMAX_VERSION}_LIB}/plugman_s.lib"
+			"glfw3"
+			"opengl32"
+		)
+		set(DEST thunderloomVRay3dsMax)
 
-		"${VRAY_3DSMAX${3DSMAX_VERSION}_LIB}/vutils_s.lib"
-		"${VRAY_3DSMAX${3DSMAX_VERSION}_LIB}/plugman_s.lib"
-		"glfw3"
-		"opengl32"
-	)
-	set(DEST thunderloomVRay3dsMax)
+		add_library(thunderloom_Vray${VRAY_VERSION}_${3DSMAX_VERSION} MODULE ${SRC})
+		target_link_libraries (thunderloom_Vray${VRAY_VERSION}_${3DSMAX_VERSION} ${LIBS})
+		target_include_directories ( thunderloom_Vray${VRAY_VERSION}_${3DSMAX_VERSION} PUBLIC ${INCLUDES})
 
-	add_library(thunderloomVRay3dsMax${3DSMAX_VERSION} MODULE ${SRC})
-	target_link_libraries (thunderloomVRay3dsMax${3DSMAX_VERSION} ${LIBS})
-	target_include_directories ( thunderloomVRay3dsMax${3DSMAX_VERSION} PUBLIC ${INCLUDES})
+		set_target_properties(thunderloom_Vray${VRAY_VERSION}_${3DSMAX_VERSION} PROPERTIES SUFFIX ".dlt")
+		target_compile_definitions(thunderloom_Vray${VRAY_VERSION}_${3DSMAX_VERSION} PUBLIC TL_MAX_VERSION="${3DSMAX_VERSION}")
 
-	set_target_properties(thunderloomVRay3dsMax${3DSMAX_VERSION} PROPERTIES SUFFIX ".dlt")
-	target_compile_definitions(thunderloomVRay3dsMax${3DSMAX_VERSION} PUBLIC TL_MAX_VERSION="${3DSMAX_VERSION}")
+		if(3DSMAX_DYNAMIC_LOAD)
+			add_library(thunderloom_Vray${VRAY_VERSION}_${3DSMAX_VERSION}_dynamic MODULE ${DYNAMIC_LOAD_SOURCES})
+			target_link_libraries(thunderloom_Vray${VRAY_VERSION}_${3DSMAX_VERSION}_dynamic ${LIBS})
+			target_include_directories(thunderloom_Vray${VRAY_VERSION}_${3DSMAX_VERSION}_dynamic PUBLIC ${INCLUDES})
 
-	if(3DSMAX_DYNAMIC_LOAD)
-		add_library(thunderloomVRay3dsMax${3DSMAX_VERSION}_dynamic MODULE ${DYNAMIC_LOAD_SOURCES})
-		target_link_libraries(thunderloomVRay3dsMax${3DSMAX_VERSION}_dynamic ${LIBS})
-		target_include_directories(thunderloomVRay3dsMax${3DSMAX_VERSION}_dynamic PUBLIC ${INCLUDES})
+			string(RANDOM PDB_ID)
+			set_target_properties(thunderloom_Vray${VRAY_VERSION}_${3DSMAX_VERSION}_dynamic PROPERTIES PDB_NAME "dynamic_${3DSMAX_VERSION}_${PDB_ID}")
 
-		string(RANDOM PDB_ID)
-		set_target_properties(thunderloomVRay3dsMax${3DSMAX_VERSION}_dynamic PROPERTIES PDB_NAME "dynamic_${3DSMAX_VERSION}_${PDB_ID}")
+			install(TARGETS thunderloom_Vray${VRAY_VERSION}_${3DSMAX_VERSION}_dynamic DESTINATION ${DEST})
+		endif()
 
-		install(TARGETS thunderloomVRay3dsMax${3DSMAX_VERSION}_dynamic DESTINATION ${DEST})
-	endif()
+		install(TARGETS thunderloom_Vray${VRAY_VERSION}_${3DSMAX_VERSION} DESTINATION ${DEST})
+		install(FILES $<TARGET_PDB_FILE:thunderloom_Vray${VRAY_VERSION}_${3DSMAX_VERSION}> DESTINATION pdbs OPTIONAL)
 
-	install(TARGETS thunderloomVRay3dsMax${3DSMAX_VERSION} DESTINATION ${DEST})
-	install(FILES $<TARGET_PDB_FILE:thunderloomVRay3dsMax${3DSMAX_VERSION}> DESTINATION pdbs OPTIONAL)
-
-
-
+	endforeach(VRAY_VERSION)
 endforeach(3DSMAX_VERSION)
+
 
 #NOTE(Vidar): This file is created in the installer project
 install(FILES "${CMAKE_BINARY_DIR}/PackageContents_3ds_max.xml" DESTINATION ${DEST} RENAME "PackageContents.xml")
