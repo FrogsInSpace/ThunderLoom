@@ -50,9 +50,24 @@ set(VRAY_SDK_ROOT "F:/_SDKs/3dsMax/ChaosGroup/")
 
 foreach(3DSMAX_VERSION ${3DSMAX_VERSIONS})
 	foreach(VRAY_VERSION ${VRAY_VERSIONS})
-		if( VRAY_VERSION GREATER 6 AND 3DSMAX_VERSION LESS 2020 )
-			# there is no Vray 7 below 3ds Max 2020
-			continue()
+		# no Vray5 for above 3ds Max 2024
+		if( VRAY_VERSION LESS 6 AND 3DSMAX_VERSION GREATER 2024 ) 
+			continue() 
+		endif()
+
+		# no Vray6 for below 3ds Max 2018
+		if( VRAY_VERSION GREATER 5 AND 3DSMAX_VERSION LESS 2018 ) 
+			continue() 
+		endif()
+
+		# no Vray6 for above 3ds Max 2025
+		if( VRAY_VERSION EQUAL 6 AND 3DSMAX_VERSION GREATER 2025 ) 
+			continue() 
+		endif()
+
+		# no Vray7 for below 3ds Max 2020	
+		if( VRAY_VERSION GREATER 6 AND 3DSMAX_VERSION LESS 2020 ) 
+			continue() 
 		endif()
 		
 		if(3DSMAX_VERSION GREATER 2022)
